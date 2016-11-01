@@ -12,7 +12,7 @@ Coming soon.
 
 ## Documentation
 
-##### METHOD /example/{argument1: type}/{argument2: type}/[optional argument: type]?[optional_argument: type]&[optional_argument2: type]
+### METHOD /example/{argument1: type}/{argument2: type}/[optional argument: type]?[optional_argument: type]&[optional_argument2: type]
 ```
 Example usage
 ```
@@ -26,7 +26,19 @@ All functions respond with a json table containing the fields `error`, `message`
 
 [response1: type, reponse2: type]
 
-##### POST /getPlayers/delete/{uid: string}
+### POST /demote/{group: number}/{target: number}
+```
+/demote/18/2470023
+{"key": "hunter2"}
+```
+
+{key: string}
+
+Sets the role of the player to the adjacent lower-rank role.
+
+[newRankName: string, newRank: number, newRoleSetId: number]
+
+### POST /getPlayers/delete/{uid: string}
 ```
 /getPlayers/delete/2f08e9796a
 {"key": "hunter2"}
@@ -36,7 +48,7 @@ All functions respond with a json table containing the fields `error`, `message`
 
 Deletes the getPlayers job with id `uid` from the filesystem if complete or the list if not. Note that if it is not complete it will still be running on the server though it cannot be accessed.
 
-##### POST /getPlayers/make/{group: number}/[rank: number]?[limit: number]&[online: boolean]
+### POST /getPlayers/make/{group: number}/[rank: number]?[limit: number]&[online: boolean]
 ```
 /getPlayers/make/147864?limit=1&online=false
 {"key": "hunter2"}
@@ -48,7 +60,7 @@ Gets the players in group with group ID `group`. If `rank` is not specified it g
 
 [uid: number]
 
-##### GET /getPlayers/retrieve/{uid: string}
+### GET /getPlayers/retrieve/{uid: string}
 ```
 /getPlayers/retrieve/2f08e9796a
 ```
@@ -59,7 +71,7 @@ Gets the result of the getPlayers job, returning `progress` in percent when not 
 complete: boolean,
 players (object): {username (string): userId (number)}]
 
-##### POST /handleJoinRequest/{group: number}/{username: string}/{accept: boolean}
+### POST /handleJoinRequest/{group: number}/{username: string}/{accept: boolean}
 ```
 /handleJoinRequest/18/Froast/true
 {"key": "hunter2"}
@@ -69,7 +81,7 @@ players (object): {username (string): userId (number)}]
 
 Searches for the join request of user with username `username` in the group with group ID `group` and accepts them if `accept` is true and denies them if it is false (note that for either case you still need the parameter in the url)
 
-##### POST /message/{recipient: number}
+### POST /message/{recipient: number}
 ```
 /message/2470023
 {"subject": "Test", "body": "Test", "key": "hunter2"}
@@ -81,7 +93,19 @@ key: string}
 
 Messages user with ID `recipient` with a message that has subject `subject` and body `body`.
 
-##### POST /setRank/{group: number}/{target: number}/{rank: number}
+### POST /promote/{group: number}/{target: number}
+```
+/promote/18/2470023
+{"key": "hunter2"}
+```
+
+{key: string}
+
+Sets the role of the player to the adjacent higher-rank role.
+
+[newRankName: string, newRank: number, newRoleSetId: number]
+
+### POST /setRank/{group: number}/{target: number}/{rank: number}
 ```
 /setRank/18/2470023/2
 {"key": "hunter2"}
@@ -93,7 +117,7 @@ Sets rank of player with user ID `target` to rank with rank number `rank` in gro
 
 [newRoleSetId: number]
 
-##### POST /shout/{group: number}
+### POST /shout/{group: number}
 ```
 /shout/18
 {"message": "Test", key": "hunter2"}

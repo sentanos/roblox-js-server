@@ -56,42 +56,46 @@ function processType (type, value) {
 
 function verifyParameters (res, validate, requiredFields, optionalFields) {
   var result = {};
-  for (var index in requiredFields) {
-    var type = requiredFields[index];
-    var use = validatorType(type);
+  if (requiredFields) {
+    for (var index in requiredFields) {
+      var type = requiredFields[index];
+      var use = validatorType(type);
 
-    var found = false;
-    for (var i = 0; i < validate.length; i++) {
-      var value = validate[i][index];
-      if (value) {
-        if (use(value)) {
-          result[index] = processType(type, value);
-          found = true;
-        } else {
-          sendErr(res, {error: 'Parameter "' + index + '" is not the correct data type.', id: null});
-          return false;
+      var found = false;
+      for (var i = 0; i < validate.length; i++) {
+        var value = validate[i][index];
+        if (value) {
+          if (use(value)) {
+            result[index] = processType(type, value);
+            found = true;
+          } else {
+            sendErr(res, {error: 'Parameter "' + index + '" is not the correct data type.', id: null});
+            return false;
+          }
+          break;
         }
-        break;
+      }
+      if (!found) {
+        sendErr(res, {error: 'Parameter "' + index + '" is required.', id: null});
+        return false;
       }
     }
-    if (!found) {
-      sendErr(res, {error: 'Parameter "' + index + '" is required.', id: null});
-      return false;
-    }
   }
-  for (index in optionalFields) {
-    type = optionalFields[index];
-    use = validatorType(type);
-    for (i = 0; i < validate.length; i++) {
-      value = validate[i][index];
-      if (value) {
-        if (use(value)) {
-          result[index] = processType(type, value);
-        } else {
-          sendErr(res, {error: 'Parameter "' + index + '" is not the correct data type.', id: null});
-          return false;
+  if (optionalFields) {
+    for (index in optionalFields) {
+      type = optionalFields[index];
+      use = validatorType(type);
+      for (i = 0; i < validate.length; i++) {
+        value = validate[i][index];
+        if (value) {
+          if (use(value)) {
+            result[index] = processType(type, value);
+          } else {
+            sendErr(res, {error: 'Parameter "' + index + '" is not the correct data type.', id: null});
+            return false;
+          }
+          break;
         }
-        break;
       }
     }
   }
@@ -104,6 +108,50 @@ function authenticate (req, res, next) {
   } else {
     sendErr(res, {error: 'Incorrect authentication key', id: null}, 401);
   }
+}
+
+function changeRank (amount) {
+  return function (req, res, next) {
+    var requiredFields = {
+      'group': 'int',
+      'target': 'int'
+    };
+    var validate = [req.params];
+
+    var opt = verifyParameters(res, validate, requiredFields);
+    if (!opt) {
+      return;
+    }
+
+    var group = opt.group;
+    rbx.getRankInGroup(group, opt.target)
+    .then(function (rank) {
+      rbx.getRoles(group)
+      .then(function (roles) {
+        // Roles is actually sorted on ROBLOX's side and returned the same way
+        for (var i = 0; i < roles.length; i++) {
+          var role = roles[i];
+          if (role.Rank === rank) {
+            var newRank = roles[i + amount];
+            if (!newRank) {
+              sendErr(res, {error: 'Rank change is out of range'});
+              return;
+            }
+            var name = newRank.Name;
+            opt.roleset = newRank.ID;
+            rbx.setRank(opt)
+            .then(function (roleset) {
+              res.json({error: null, data: {newRoleSetId: roleset, newRankName: name, newRank: newRank.Rank}, message: 'Successfully changed rank of user ' + opt.target + ' to rank "' + name + '" in group ' + opt.group});
+            })
+            .catch(function (err) {
+              sendErr(res, {error: 'Change rank failed: ' + err.message});
+            });
+            return;
+          }
+        }
+      });
+    });
+  };
 }
 
 function getPlayersWithOpt (req, res, next) {
@@ -122,8 +170,6 @@ function getPlayersWithOpt (req, res, next) {
   if (!opt) {
     return;
   }
-
-  opt.online = (req.query.online === 'true');
 
   inProgress[uid] = 0;
   var players = rbx.getPlayers(opt);
@@ -149,13 +195,13 @@ app.post('/setRank/:group/:target/:rank', authenticate, function (req, res, next
     'target': 'int'
   };
   var validate = [req.params];
-  var opt = verifyParameters(res, validate, requiredFields, []);
+  var opt = verifyParameters(res, validate, requiredFields);
   if (!opt) {
     return;
   }
   rbx.setRank(opt)
   .then(function (roleset) {
-    res.json({error: null, data: roleset, message: 'Successfully changed rank of user ' + opt.target + ' to roleset ' + roleset + ' in group ' + opt.group});
+    res.json({error: null, data: {newRoleSetId: roleset}, message: 'Successfully changed rank of user ' + opt.target + ' to roleset ' + roleset + ' in group ' + opt.group});
   })
   .catch(function (err) {
     sendErr(res, {error: 'Set rank failed: ' + err.message});
@@ -169,7 +215,7 @@ app.post('/handleJoinRequest/:group/:username/:accept', authenticate, function (
     'accept': 'boolean'
   };
   var validate = [req.params];
-  var opt = verifyParameters(res, validate, requiredFields, []);
+  var opt = verifyParameters(res, validate, requiredFields);
   if (!opt) {
     return;
   }
@@ -189,7 +235,7 @@ app.post('/message/:recipient/', authenticate, function (req, res, next) {
     'body': 'string'
   };
   var validate = [req.params, req.body];
-  var opt = verifyParameters(res, validate, requiredFields, []);
+  var opt = verifyParameters(res, validate, requiredFields);
   if (!opt) {
     return;
   }
@@ -222,6 +268,9 @@ app.post('/shout/:group', authenticate, function (req, res, next) {
     sendErr(res, {error: 'Error: ' + err.message});
   });
 });
+
+app.post('/promote/:group/:target', authenticate, changeRank(1));
+app.post('/demote/:group/:target', authenticate, changeRank(-1));
 
 app.post('/getPlayers/make/:group/:rank', getPlayersWithOpt);
 app.post('/getPlayers/make/:group', getPlayersWithOpt);
