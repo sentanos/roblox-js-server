@@ -6,13 +6,14 @@ var validator = require('validator');
 var bodyParser = require('body-parser');
 
 var app = express();
-var options = require('./settings.json');
-var key = options.key;
+var port = process.env.PORT || 8080;
+var settings = require('./settings.json');
+var key = settings.key;
 
 app.set('env', 'production');
 
 function login () {
-  rbx.login(options.username, options.password);
+  rbx.login(settings.username, settings.password);
 }
 setInterval(login, 86400);
 login();
@@ -20,7 +21,13 @@ login();
 var inProgress = {};
 var completed = {};
 
-require('fs').readdirSync('./players').forEach(function (file) { // This is considered a part of server startup and following functions could error anyways if it isn't complete, so using synchronous instead of asynchronous is very much intended.
+var dir = './players';
+
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir);
+}
+
+fs.readdirSync('./players').forEach(function (file) { // This is considered a part of server startup and following functions could error anyways if it isn't complete, so using synchronous instead of asynchronous is very much intended.
   completed[file] = true;
 });
 
@@ -340,6 +347,6 @@ app.use(function (err, req, res, next) {
   sendErr(res, {error: 'Internal server error'});
 });
 
-app.listen(80, function () {
+app.listen(port, function () {
   console.log('Listening');
 });
