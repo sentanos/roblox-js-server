@@ -6,6 +6,17 @@ This is a primitive example server that uses my [roblox-js](https://github.com/s
 
 Go to settings.json and set `username` and `password` to the username and password of the ROBLOX account you want to use. The `key` field is essentially a password for the site (to prevent strangers from accessing account functions). I recommend generating a random string or just smashing your keyboard since this will typically be accessed by another script that doesn't have to memorize said key.
 
+## Free Host Tutorial
+1. Go to [heroku.com](https://heroku.com/) and sign up for an account.
+2. Install [git](https://git-scm.com/downloads).
+3. Install [heroku command line tools](https://devcenter.heroku.com/articles/heroku-command-line#download-and-install).
+4. [Download](https://github.com/sentanos/roblox-js-server/archive/master.zip) this repository and unzip.
+5. Open the settings.json file and fill in the fields "username", "password", and "key" in the quotes after each.
+6. Open a terminal or command prompt and type "cd ", then drag the folder into the window and release. It should fill in the path name afterwards.
+7. Type in "git init" followed by "git commit -am "Initial"
+8. Type in "heroku create", you can put in a custom name after the command as well. eg. "heroku create roblox-js-server"
+9. Finally type "git push heroku master" and let it go through. If all goes well it will deploy after a minute or two and will tell you the url of your server around the end of the process.
+
 ## Video Tutorial
 
 Coming soon.
