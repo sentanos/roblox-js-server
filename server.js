@@ -333,7 +333,7 @@ app.get('/getPlayers/retrieve/:uid', function (req, res, next) {
         }
       });
     } else if (progress) {
-      sendErr(res, {error: 'Job is still processing', complete: false, progress: progress()}, 200);
+      sendErr(res, {error: 'Job is still processing', data: {complete: false, progress: progress()}}, 200);
     } else {
       fail();
     }
