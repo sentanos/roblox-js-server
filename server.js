@@ -15,7 +15,7 @@ app.set('env', 'production');
 function login () {
   rbx.login(settings.username, settings.password);
 }
-setInterval(login, 86400);
+setInterval(login, 86400000);
 login();
 
 var inProgress = {};
@@ -323,12 +323,19 @@ app.get('/getPlayers/retrieve/:uid', function (req, res, next) {
           next(err);
         } else {
           res.append('Content-Type', 'application/json');
-          res.write('{"error":null,"data":{"progress":100,"complete":true,"players":\n');
+          res.write('{"error":null,"data":{"progress":100,"complete":true,');
           var stream = fs.createReadStream(path);
-          stream.on('data', res.write.bind(res));
+          var first = true;
+          stream.on('data', function (data) {
+            if (first) {
+              res.write(data.toString().substring(1));
+              first = false;
+            } else {
+              res.write(data);
+            }
+          });
           stream.on('end', function () {
-            res.write('\n}');
-            res.end();
+            res.end('}');
           });
         }
       });
