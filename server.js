@@ -328,8 +328,8 @@ app.get('/getPlayers/retrieve/:uid', function (req, res, next) {
           var first = true;
           stream.on('data', function (data) {
             if (first) {
-              res.write(data.toString().substring(1));
               first = false;
+              res.write(data.toString().substring(1));
             } else {
               res.write(data);
             }
