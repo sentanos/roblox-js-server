@@ -1,6 +1,6 @@
 {
   "name": "roblox-js-server",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "An example server that uses the roblox-js module.",
   "main": "server.js",
   "scripts": {
