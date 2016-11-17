@@ -32,7 +32,7 @@ fs.readdirSync('./players').forEach(function (file) { // This is considered a pa
 });
 
 function sendErr (res, json, status) {
-  res.status(status || 500).json(json);
+  res.json(json);
 }
 
 function validatorType (type) {
