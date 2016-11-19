@@ -65,7 +65,7 @@ Sets the role of the player to the adjacent lower-rank role.
 
 ### POST /getPlayers/delete/{uid: string}
 ```http
-/getPlayers/delete/2f08e9796a/
+/getPlayers/delete/2f08e9796a
 {"key": "hunter2"}
 ```
 
@@ -87,7 +87,7 @@ Gets the players in group with group ID `group`. If `rank` is not specified it g
 
 ### GET /getPlayers/retrieve/{uid: string}
 ```http
-/getPlayers/retrieve/2f08e9796a/
+/getPlayers/retrieve/2f08e9796a
 ```
 
 Gets the result of the getPlayers job, returning `progress` in percent when not complete while `complete` denotes whether or not it is. The players are in json object `players`.
@@ -98,7 +98,7 @@ players (object): {username (string): userId (number)}]
 
 ### POST /handleJoinRequest/{group: number}/{username: string}/{accept: boolean}
 ```http
-/handleJoinRequest/18/Froast/true/
+/handleJoinRequest/18/Froast/true
 {"key": "hunter2"}
 ```
 
@@ -108,7 +108,7 @@ Searches for the join request of user with username `username` in the group with
 
 ### POST /message/{recipient: number}
 ```http
-/message/2470023/
+/message/2470023
 {"subject": "Test", "body": "Test", "key": "hunter2"}
 ```
 
@@ -120,7 +120,7 @@ Messages user with ID `recipient` with a message that has subject `subject` and 
 
 ### POST /promote/{group: number}/{target: number}
 ```http
-/promote/18/2470023/
+/promote/18/2470023
 {"key": "hunter2"}
 ```
 
@@ -132,7 +132,7 @@ Sets the role of the player to the adjacent higher-rank role.
 
 ### POST /setRank/{group: number}/{target: number}/{rank: number}
 ```http
-/setRank/18/2470023/2/
+/setRank/18/2470023/2
 {"key": "hunter2"}
 ```
 
@@ -144,7 +144,7 @@ Sets rank of player with user ID `target` to rank with rank number `rank` in gro
 
 ### POST /shout/{group: number}
 ```http
-/shout/18/
+/shout/18
 {"message": "Test", "key": "hunter2"}
 ```
 
