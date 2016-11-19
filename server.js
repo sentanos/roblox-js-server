@@ -135,20 +135,33 @@ function changeRank (amount) {
     .then(function (rank) {
       rbx.getRoles(group)
       .then(function (roles) {
+        var found;
+        var foundRank;
+
         // Roles is actually sorted on ROBLOX's side and returned the same way
         for (var i = 0; i < roles.length; i++) {
           var role = roles[i];
-          if (role.Rank === rank) {
-            var newRank = roles[i + amount];
-            if (!newRank) {
+          var thisRank = role.Rank;
+          if (thisRank === rank) {
+            var change = i + amount;
+            found = roles[change];
+            if (!found) {
               sendErr(res, {error: 'Rank change is out of range'});
               return;
             }
-            var name = newRank.Name;
-            opt.roleset = newRank.ID;
+            foundRank = found.Rank;
+            var up = roles[change + 1];
+            var down = roles[change - 1];
+            if ((up && up.Rank === foundRank) || (down && down.Rank === foundRank)) {
+              sendErr(res, {error: 'There are two or more roles with the same rank number, please change or commit manually.'});
+              return;
+            }
+            var name = found.Name;
+            var roleset = found.ID;
+            opt.roleset = roleset;
             rbx.setRank(opt)
-            .then(function (roleset) {
-              res.json({error: null, data: {newRoleSetId: roleset, newRankName: name, newRank: newRank.Rank}, message: 'Successfully changed rank of user ' + opt.target + ' to rank "' + name + '" in group ' + opt.group});
+            .then(function () {
+              res.json({error: null, data: {newRoleSetId: roleset, newRankName: name, newRank: foundRank}, message: 'Successfully changed rank of user ' + opt.target + ' to rank "' + name + '" in group ' + opt.group});
             })
             .catch(function (err) {
               sendErr(res, {error: 'Change rank failed: ' + err.message});
@@ -206,9 +219,22 @@ app.post('/setRank/:group/:target/:rank', authenticate, function (req, res, next
   if (!opt) {
     return;
   }
-  rbx.setRank(opt)
-  .then(function (roleset) {
-    res.json({error: null, data: {newRoleSetId: roleset}, message: 'Successfully changed rank of user ' + opt.target + ' to roleset ' + roleset + ' in group ' + opt.group});
+  // This gets the rank manually instead of letting setRank do it because it needs the role's name.
+  var rank = opt.rank;
+  rbx.getRoles(opt.group)
+  .then(function (roles) {
+    var role = rbx.getRole(roles, rank);
+    if (!role) {
+      sendErr(res, {error: 'Role does not exist'});
+      return;
+    }
+    var name = role.Name;
+    delete opt.rank;
+    opt.roleset = role.ID;
+    return rbx.setRank(opt)
+    .then(function (roleset) {
+      res.json({error: null, data: {newRoleSetId: roleset, newRankName: name, newRank: rank}, message: 'Successfully changed rank of user ' + opt.target + ' to rank "' + name + '" in group ' + opt.group});
+    })
   })
   .catch(function (err) {
     sendErr(res, {error: 'Set rank failed: ' + err.message});
