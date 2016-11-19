@@ -145,7 +145,7 @@ Sets rank of player with user ID `target` to rank with rank number `rank` in gro
 ### POST /shout/{group: number}
 ```http
 /shout/18
-{"message": "Test", key": "hunter2"}
+{"message": "Test", "key": "hunter2"}
 ```
 
 
