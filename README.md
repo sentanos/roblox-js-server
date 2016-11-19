@@ -38,7 +38,7 @@ print((api.message(userId, 'Subject', 'Body')).message)
 ## Documentation
 
 ### METHOD /example/{argument1: type}/{argument2: type}/[optional argument: type]?[optional_argument: type]&[optional_argument2: type]
-```
+```http
 Example usage
 ```
 
@@ -52,7 +52,7 @@ All functions respond with a json table containing the fields `error`, `message`
 [response1: type, reponse2: type]
 
 ### POST /demote/{group: number}/{target: number}
-```
+```http
 /demote/18/2470023
 {"key": "hunter2"}
 ```
@@ -64,7 +64,7 @@ Sets the role of the player to the adjacent lower-rank role.
 [newRankName: string, newRank: number, newRoleSetId: number]
 
 ### POST /getPlayers/delete/{uid: string}
-```
+```http
 /getPlayers/delete/2f08e9796a
 {"key": "hunter2"}
 ```
@@ -74,7 +74,7 @@ Sets the role of the player to the adjacent lower-rank role.
 Deletes the getPlayers job with id `uid` from the filesystem if complete or the list if not. Note that if it is not complete it will still be running on the server though it cannot be accessed.
 
 ### POST /getPlayers/make/{group: number}/[rank: number]?[limit: number]&[online: boolean]
-```
+```http
 /getPlayers/make/147864?limit=1&online=false
 {"key": "hunter2"}
 ```
@@ -86,7 +86,7 @@ Gets the players in group with group ID `group`. If `rank` is not specified it g
 [uid: number]
 
 ### GET /getPlayers/retrieve/{uid: string}
-```
+```http
 /getPlayers/retrieve/2f08e9796a
 ```
 
@@ -97,7 +97,7 @@ complete: boolean,
 players (object): {username (string): userId (number)}]
 
 ### POST /handleJoinRequest/{group: number}/{username: string}/{accept: boolean}
-```
+```http
 /handleJoinRequest/18/Froast/true
 {"key": "hunter2"}
 ```
@@ -107,7 +107,7 @@ players (object): {username (string): userId (number)}]
 Searches for the join request of user with username `username` in the group with group ID `group` and accepts them if `accept` is true and denies them if it is false (note that for either case you still need the parameter in the url)
 
 ### POST /message/{recipient: number}
-```
+```http
 /message/2470023
 {"subject": "Test", "body": "Test", "key": "hunter2"}
 ```
@@ -119,7 +119,7 @@ key: string}
 Messages user with ID `recipient` with a message that has subject `subject` and body `body`.
 
 ### POST /promote/{group: number}/{target: number}
-```
+```http
 /promote/18/2470023
 {"key": "hunter2"}
 ```
@@ -131,7 +131,7 @@ Sets the role of the player to the adjacent higher-rank role.
 [newRankName: string, newRank: number, newRoleSetId: number]
 
 ### POST /setRank/{group: number}/{target: number}/{rank: number}
-```
+```http
 /setRank/18/2470023/2
 {"key": "hunter2"}
 ```
@@ -143,7 +143,7 @@ Sets rank of player with user ID `target` to rank with rank number `rank` in gro
 [newRoleSetId: number]
 
 ### POST /shout/{group: number}
-```
+```http
 /shout/18
 {"message": "Test", key": "hunter2"}
 ```
