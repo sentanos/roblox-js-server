@@ -234,7 +234,7 @@ app.post('/setRank/:group/:target/:rank', authenticate, function (req, res, next
     return rbx.setRank(opt)
     .then(function (roleset) {
       res.json({error: null, data: {newRoleSetId: roleset, newRankName: name, newRank: rank}, message: 'Successfully changed rank of user ' + opt.target + ' to rank "' + name + '" in group ' + opt.group});
-    })
+    });
   })
   .catch(function (err) {
     sendErr(res, {error: 'Set rank failed: ' + err.message});
