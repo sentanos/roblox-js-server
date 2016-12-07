@@ -56,6 +56,8 @@ function processType (type, value) {
       return parseInt(value, 10);
     case 'boolean':
       return (value === 'true');
+    case 'string':
+      return validator.escape(value);
     default:
       return value;
   }
