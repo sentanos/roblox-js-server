@@ -4,13 +4,26 @@ var fs = require('fs');
 var crypto = require('crypto');
 var validator = require('validator');
 var bodyParser = require('body-parser');
+var Promise = require('bluebird');
 
 var app = express();
 var port = process.env.PORT || 8080;
 var settings = require('./settings.json');
 var key = settings.key;
+var maximumRank = settings.maximumRank;
 
 app.set('env', 'production');
+
+var _setRank = rbx.setRank;
+
+rbx.setRank = function (opt) {
+  var rank = opt.rank;
+  if (rank > maximumRank) {
+    return Promise.reject(new Error('New rank ' + rank + ' is above rank limit ' + maximumRank));
+  } else {
+    return _setRank(opt);
+  }
+};
 
 function login () {
   rbx.login(settings.username, settings.password);
@@ -119,6 +132,18 @@ function authenticate (req, res, next) {
   }
 }
 
+function checkRank (opt) {
+  var group = opt.group;
+  var target = opt.target;
+  return rbx.getRankInGroup(group, target)
+  .then(function (rank) {
+    if (rank > maximumRank) {
+      throw new Error('Original rank ' + rank + ' is above rank limit ' + maximumRank);
+    }
+    return rank;
+  });
+}
+
 function changeRank (amount) {
   return function (req, res, next) {
     var requiredFields = {
@@ -133,9 +158,9 @@ function changeRank (amount) {
     }
 
     var group = opt.group;
-    rbx.getRankInGroup(group, opt.target)
+    checkRank(opt)
     .then(function (rank) {
-      rbx.getRoles(group)
+      return rbx.getRoles(group)
       .then(function (roles) {
         var found;
         var foundRank;
@@ -159,19 +184,17 @@ function changeRank (amount) {
               return;
             }
             var name = found.Name;
-            var roleset = found.ID;
-            opt.roleset = roleset;
-            rbx.setRank(opt)
-            .then(function () {
+            opt.rank = foundRank;
+            return rbx.setRank(opt)
+            .then(function (roleset) {
               res.json({error: null, data: {newRoleSetId: roleset, newRankName: name, newRank: foundRank}, message: 'Successfully changed rank of user ' + opt.target + ' to rank "' + name + '" in group ' + opt.group});
-            })
-            .catch(function (err) {
-              sendErr(res, {error: 'Change rank failed: ' + err.message});
             });
-            return;
           }
         }
       });
+    })
+    .catch(function (err) {
+      sendErr(res, {error: 'Change rank failed: ' + err.message});
     });
   };
 }
@@ -223,19 +246,20 @@ app.post('/setRank/:group/:target/:rank', authenticate, function (req, res, next
   }
   // This gets the rank manually instead of letting setRank do it because it needs the role's name.
   var rank = opt.rank;
-  rbx.getRoles(opt.group)
-  .then(function (roles) {
-    var role = rbx.getRole(roles, rank);
-    if (!role) {
-      sendErr(res, {error: 'Role does not exist'});
-      return;
-    }
-    var name = role.Name;
-    delete opt.rank;
-    opt.roleset = role.ID;
-    return rbx.setRank(opt)
-    .then(function (roleset) {
-      res.json({error: null, data: {newRoleSetId: roleset, newRankName: name, newRank: rank}, message: 'Successfully changed rank of user ' + opt.target + ' to rank "' + name + '" in group ' + opt.group});
+  checkRank(opt)
+  .then(function () {
+    return rbx.getRoles(opt.group)
+    .then(function (roles) {
+      var role = rbx.getRole(roles, rank);
+      if (!role) {
+        sendErr(res, {error: 'Role does not exist'});
+        return;
+      }
+      var name = role.Name;
+      return rbx.setRank(opt)
+      .then(function (roleset) {
+        res.json({error: null, data: {newRoleSetId: roleset, newRankName: name, newRank: rank}, message: 'Successfully changed rank of user ' + opt.target + ' to rank "' + name + '" in group ' + opt.group});
+      });
     });
   })
   .catch(function (err) {

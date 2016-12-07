@@ -1,5 +1,6 @@
 {
   "username": "",
   "password":"",
-  "key": ""
+  "key": "",
+  "maximumRank": 255
 }
