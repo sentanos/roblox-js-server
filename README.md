@@ -11,11 +11,11 @@ Go to settings.json and set `username` and `password` to the username and passwo
 2. Install [heroku command line tools](https://devcenter.heroku.com/articles/heroku-command-line#download-and-install).
 3. [Download](https://github.com/sentanos/roblox-js-server/archive/master.zip) this repository and unzip.
 4. Open the settings.json file and fill in the fields "username", "password", and "key" in the quotes after each.
-5. Open a terminal or command prompt and type "cd ", then drag the folder into the window and release. It should fill in the path name afterwards.
+5. Open a terminal or command prompt and type "cd ", then drag the folder into the window and release. It should fill in the path name afterwards. Hit enter.
 6. Type in "heroku login" and type in the username and password of the account you made in step 1.
-7. Type in "git init" followed by "git add --all" and then "git commit -am "Initial"
-8. Type in "heroku create"; you can put in a custom name after the command as well. eg. "heroku create roblox-js-server"
-9. Finally type "git push heroku master" and let it go through. If all goes well it will deploy after a minute or two and will tell you the url of your server around the end of the process.
+7. Type in "git init" [Enter] followed by "git add --all" [Enter] and then "git commit -am "Initial" [Enter]
+8. Type in "heroku create" [Enter]; you can put in a custom name after the command as well. eg. "heroku create roblox-js-server"
+9. Finally type "git push heroku master" [Enter] and let it go through. If all goes well it will deploy after a minute or two and will tell you the url of your server around the end of the process.
 
 ## Lua Example
 
