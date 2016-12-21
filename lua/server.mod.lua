@@ -4,6 +4,7 @@ local setmetatable = setmetatable
 local error = error
 local httpService = game:GetService'HttpService'
 local postAsync = httpService.PostAsync
+local getAsync = httpService.GetAsync
 local jsonEncode = httpService.JSONEncode
 local jsonDecode = httpService.JSONDecode
 local base, key
@@ -17,16 +18,17 @@ local function decode (tab)
 end
 
 local function post (url, data)
-  local success, response = pcall(decode, postAsync(httpService, url, data))
+  local body = postAsync(httpService, url, data)
+  local success, response = pcall(decode, body)
   if (success) then
-	local err = response.error
-	if (err) then
-	  error(err)
-	else
-	  return response
-	end
+  	local err = response.error
+  	if (err) then
+  	  error(err)
+  	else
+  	  return response
+  	end
   else
-	error('Response was not valid json, full body: '..response)
+  	error('Response was not valid json, full body: '..body)
   end
 end
 
@@ -56,7 +58,21 @@ end
 
 function groups.handleJoinRequest (group, username, accept)
   local acceptString = accept and 'true' or 'false'
-  return http('/handleJoinRequest/'..group..'/'..username..'/'..acceptString);
+  return http('/handleJoinRequest/'..group..'/'..username..'/'..acceptString)
+end
+
+function groups.getPlayers (group, rank, limit, online)
+  local job = http('/getPlayers/make/'..group..(rank and '/'..rank or '')..'?limit='..(limit and limit or '-2')..'&online='..(online and 'true' or 'false')).data.uid
+  local complete = false
+  repeat
+    local body = getAsync(httpService, base..'/getPlayers/retrieve/'..job)
+    success, response = pcall(decode, body)
+    if not success then
+    	error('Response was not valid json, full body: '..body)
+    end
+    complete = response.data.complete
+  until complete
+  return response
 end
 
 function module.message (userId, subject, message)
@@ -66,11 +82,11 @@ end
 return function (domain, newKey, group)
   local isString = (type(domain) == 'string')
   if (not domain) or (not isString) or (isString and #domain <= 0) then
-    error('Url is required and must be a string greater than length 0');
+    error('Url is required and must be a string greater than length 0')
   end
   isString = (type(newKey) == 'string')
   if (not newKey) or (not isString) or (isString and #newKey <= 0) then
-    error('Key is required and must be a string greater than length 0');
+    error('Key is required and must be a string greater than length 0')
   end
 
   base = 'http://'..domain
@@ -79,7 +95,7 @@ return function (domain, newKey, group)
   if group then
     local isNumber = (type(group) == 'number')
     if (not isNumber) or (group <= 0) then
-      error('If group is provided it must be a number greater than 0');
+      error('If group is provided it must be a number greater than 0')
     end
 
     for name, func in next, groups do
