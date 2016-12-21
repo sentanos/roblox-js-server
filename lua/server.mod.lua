@@ -63,9 +63,10 @@ end
 
 function groups.getPlayers (group, rank, limit, online)
   local job = http('/getPlayers/make/'..group..(rank and '/'..rank or '')..'?limit='..(limit and limit or '-2')..'&online='..(online and 'true' or 'false')).data.uid
-  local complete = false
+  local complete, response = false
   repeat
     local body = getAsync(httpService, base..'/getPlayers/retrieve/'..job)
+    local success
     success, response = pcall(decode, body)
     if not success then
     	error('Response was not valid json, full body: '..body)
