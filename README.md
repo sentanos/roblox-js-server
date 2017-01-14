@@ -188,7 +188,7 @@ Posts a message to the wall in group with group ID `group` and the message `mess
 ### POST /forumPost/new/{forumId: number}?[locked: boolean]
 ```http
 /forumPost/new/32?locked=true
-{"subject": "Test", body: "Test", "key": "hunter2"}
+{"subject": "Test", "body": "Test", "key": "hunter2"}
 ```
 
 _NOTE: Lua function name is 'forumPostNew'_
