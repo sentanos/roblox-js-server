@@ -56,6 +56,10 @@ function validatorType (type) {
       return validator.isAlphanumeric;
     case 'boolean':
       return validator.isBoolean;
+    case 'string':
+      return function (value) {
+        return typeof value === 'string';
+      };
     default:
       return function () {
         return true;
@@ -137,6 +141,9 @@ function checkRank (opt) {
   var target = opt.target;
   return rbx.getRankInGroup(group, target)
   .then(function (rank) {
+    if (rank === 0) {
+      throw new Error('Target user ' + target + ' is not in group ' + group);
+    }
     if (rank > maximumRank) {
       throw new Error('Original rank ' + rank + ' is above rank limit ' + maximumRank);
     }
@@ -322,6 +329,72 @@ app.post('/shout/:group', authenticate, function (req, res, next) {
   rbx.shout(opt)
   .then(function () {
     res.json({error: null, message: 'Shouted in group ' + opt.group});
+  })
+  .catch(function (err) {
+    sendErr(res, {error: 'Error: ' + err.message});
+  });
+});
+
+app.post('/post/:group', authenticate, function (req, res, next) {
+  var requiredFields = {
+    'group': 'int'
+  };
+  var optionalFields = {
+    'message': 'string'
+  };
+  var validate = [req.params, req.body];
+  var opt = verifyParameters(res, validate, requiredFields, optionalFields);
+  if (!opt) {
+    return;
+  }
+  rbx.post(opt)
+  .then(function () {
+    res.json({error: null, message: 'Posted in group ' + opt.group});
+  })
+  .catch(function (err) {
+    sendErr(res, {error: 'Error: ' + err.message});
+  });
+});
+
+app.post('/forumPost/new/:forumId', authenticate, function (req, res, next) {
+  var requiredFields = {
+    'forumId': 'int',
+    'body': 'string',
+    'subject': 'string'
+  };
+  var optionalFields = {
+    'locked': 'boolean'
+  };
+  var validate = [req.params, req.body, req.query];
+  var opt = verifyParameters(res, validate, requiredFields, optionalFields);
+  if (!opt) {
+    return;
+  }
+  rbx.forumPost(opt)
+  .then(function (id) {
+    res.json({error: null, data: {newPostId: id}, message: 'Created new forum post with ID ' + id + ' in forum ' + opt.forumId});
+  })
+  .catch(function (err) {
+    sendErr(res, {error: 'Error: ' + err.message});
+  });
+});
+
+app.post('/forumPost/reply/:postId', authenticate, function (req, res, next) {
+  var requiredFields = {
+    'postId': 'int',
+    'body': 'string'
+  };
+  var optionalFields = {
+    'locked': 'boolean'
+  };
+  var validate = [req.params, req.body, req.query];
+  var opt = verifyParameters(res, validate, requiredFields, optionalFields);
+  if (!opt) {
+    return;
+  }
+  rbx.forumPost(opt)
+  .then(function (id) {
+    res.json({error: null, data: {newPostId: id}, message: 'Replied to forum post ' + opt.postId + ' with new post ID ' + id});
   })
   .catch(function (err) {
     sendErr(res, {error: 'Error: ' + err.message});
