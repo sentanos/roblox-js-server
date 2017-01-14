@@ -11,17 +11,34 @@ Go to settings.json and set `username` and `password` to the username and passwo
 2. Install [heroku command line tools](https://devcenter.heroku.com/articles/heroku-command-line#download-and-install).
 3. [Download](https://github.com/sentanos/roblox-js-server/archive/master.zip) this repository and unzip.
 4. Open the settings.json file and fill in the fields "username", "password", and "key" in the quotes after each.
-5. Open a terminal or command prompt and type "cd ", then drag the folder into the window and release. It should fill in the path name afterwards. Hit enter.
-6. Type in "heroku login" and type in the username and password of the account you made in step 1.
-7. Type in "git init" [Enter] followed by "git add --all" [Enter] and then "git commit -am "Initial" [Enter]
-8. Type in "heroku create" [Enter]; you can put in a custom name after the command as well. eg. "heroku create roblox-js-server"
-9. Finally type "git push heroku master" [Enter] and let it go through. If all goes well it will deploy after a minute or two and will tell you the url of your server around the end of the process.
+5. Open a terminal or command prompt and type `cd `, then drag the folder into the window and release. It should fill in the path name afterwards. Hit enter.
+6. Type in `heroku login` and type in the username and password of the account you made in step 1.
+7. Type in `git init` [Enter] followed by `git add --all` [Enter] and then `git commit -am "Initial"` [Enter]
+8. Type in `heroku create` [Enter]; you can put in a custom name after the command as well. eg. `heroku create roblox-js-server`
+9. Finally type `git push heroku master` [Enter] and let it go through. If all goes well it will deploy after a minute or two and will tell you the url of your server around the end of the process.
+
+## Updating
+To update the server files on heroku (esp. server.js):
+1. Go to your original roblox-js-server folder and delete all files EXCEPT settings.json (unless you want to reenter info)
+2. [Redownload](https://github.com/sentanos/roblox-js-server/archive/master.zip) the repository and unzip
+3. Drag all the files in the new folder you downloaded into the old one EXCEPT for settings.json
+4. Open a terminal or command prompt and type `cd `, then drag the folder into the window and release. Hit enter.
+5. Type in `git add --all` [Enter]
+6. Type in `git commit -am "Update"` [Enter]
+7. Type in `git push heroku master` [Enter] and let it run.
+
+Sometimes you also have to update dependency files like roblox-js which the module requires:
+1. Open a terminal or command prompt and type `cd `, then drag the folder into the window and release. Hit enter.
+2. Type in `heroku config:set NODE_MODULES_CACHE=false` [Enter]
+3. Type in `git commit --allow-empty -m "Rebuild"` [Enter]
+4. Type in `git push heroku master` [Enter] and let it run
+5. Type in `heroku config:unset NODE_MODULES_CACHE` [Enter]
 
 ## Lua Example
 
 A module script is available in [lua/server.mod.lua](./lua/server.mod.lua) that allows you to use functions to send commands to the server. An initializer function is returned by the module and requires the arguments `domain` and `key`. If the third `group` argument is provided, the returned table will automatically call group-related functions with that groupId, otherwise it has to be the first argument.
 
-The commands `promote`, `demote`, `setRank`, `shout`, `handleJoinRequest`, and `message` are available, all arguments are in the same order as they are in the documentation, with parameters first and then each body argument in order (excluding key). The return value of the function is the decoded table that the API returns.
+The commands `promote`, `demote`, `setRank`, `shout`, `post`, `handleJoinRequest`, `forumPostNew`, `forumPostReply`, and `message` are available, all arguments are in the same order as they are in the documentation, with parameters first and then each body argument in order (excluding key). The return value of the function is the decoded table that the API returns.
 
 Example usage, assuming ModuleScript is named "Server" and is in the same directory as the script (eg. both ServerScriptService):
 ```lua
@@ -31,8 +48,8 @@ local key = '/UAO9lTOYapr8ecV8cs/t3cP9c7na6rKHfRn7M6GDct+PdJyQJ40Jebe+CKZDgKV8TR
 local groupId = 18
 local userId = game:GetService'Players':GetUserIdFromNameAsync'Shedletsky'
 local api = server(domain, key, groupId)
-print((api.promote(userId)).message)
-print((api.message(userId, 'Subject', 'Body')).message)
+print(api.promote(userId).message)
+print(api.message(userId, 'Subject', 'Body').message)
 ```
 
 ## Documentation
@@ -153,3 +170,46 @@ Sets rank of player with user ID `target` to rank with rank number `rank` in gro
 key: string}
 
 Shouts in group with group ID `group` and the message `message`.
+
+### POST /post/{group: number}
+```http
+/post/18
+{"message": "Test", "key": "hunter2"}
+```
+
+
+{message: string,
+key: string}
+
+Posts a message to the wall in group with group ID `group` and the message `message`.
+
+### POST /forumPost/new/{forumId: number}?[locked: boolean]
+```http
+/forumPost/new/32?locked=true
+{"subject": "Test", body: "Test", "key": "hunter2"}
+```
+
+_NOTE: Lua function name is 'forumPostNew'_
+
+{subject: string,
+body: string,
+key: string}
+
+Creates a new forumPost with subject `subject` and body `body` in forum with id `forumId`. If `locked` is true the replies to the post will be disabled.
+
+[newPostId: number]
+
+### POST /forumPost/reply/{postId: number}?[locked: boolean]
+```http
+/forumPost/reply/201983178?locked=true
+{body: "Test", "key": "hunter2"}
+```
+
+_NOTE: Lua function name is 'forumPostReply'_
+
+{body: string,
+key: string}
+
+Replies to forumPost with postId `postId`, the reply has the body `body`. If `locked` is true the replies to the post will be disabled.
+
+[newPostId: number]
