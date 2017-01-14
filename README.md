@@ -204,7 +204,7 @@ Creates a new forumPost with subject `subject` and body `body` in forum with id 
 ### POST /forumPost/reply/{postId: number}?[locked: boolean]
 ```http
 /forumPost/reply/201983178?locked=true
-{body: "Test", "key": "hunter2"}
+{"body": "Test", "key": "hunter2"}
 ```
 
 _NOTE: Lua function name is 'forumPostReply'_
