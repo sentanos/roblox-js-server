@@ -56,6 +56,10 @@ function groups.shout (group, message)
   return http('/shout/'..group, {message = message})
 end
 
+function groups.post (group, message)
+  return http('/post/'..group, {message = message})
+end
+
 function groups.handleJoinRequest (group, username, accept)
   local acceptString = accept and 'true' or 'false'
   return http('/handleJoinRequest/'..group..'/'..username..'/'..acceptString)
@@ -78,6 +82,14 @@ end
 
 function module.message (userId, subject, message)
   return http('/message/'..userId, {subject = subject, body = message})
+end
+
+function module.forumPostNew (forumId, subject, body, locked)
+  return http('/forumPost/new/'..forumId..'?locked='..(locked and 'true' or 'false'), {subject = subject, body = body})
+end
+
+function module.forumPostReply (postId, body, locked)
+  return http('/forumPost/reply/'..postId..'?locked='..(locked and 'true' or 'false'), {body = body})
 end
 
 return function (domain, newKey, group)
