@@ -19,6 +19,7 @@ Go to settings.json and set `username` and `password` to the username and passwo
 
 ## Updating
 To update the server files on heroku (esp. server.js):
+
 1. Go to your original roblox-js-server folder and delete all files EXCEPT settings.json (unless you want to reenter info)
 2. [Redownload](https://github.com/sentanos/roblox-js-server/archive/master.zip) the repository and unzip
 3. Drag all the files in the new folder you downloaded into the old one EXCEPT for settings.json
@@ -28,6 +29,7 @@ To update the server files on heroku (esp. server.js):
 7. Type in `git push heroku master` [Enter] and let it run.
 
 Sometimes you also have to update dependency files like roblox-js which the module requires:
+
 1. Open a terminal or command prompt and type `cd `, then drag the folder into the window and release. Hit enter.
 2. Type in `heroku config:set NODE_MODULES_CACHE=false` [Enter]
 3. Type in `git commit --allow-empty -m "Rebuild"` [Enter]
