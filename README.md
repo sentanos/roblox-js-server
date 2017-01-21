@@ -88,8 +88,6 @@ Sets the role of the player to the adjacent lower-rank role.
 /getBlurb/2470023
 ```
 
-{key: string}
-
 Gets the blurb of the user with `userId`.
 
 [blurb: string]
