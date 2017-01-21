@@ -25,12 +25,6 @@ rbx.setRank = function (opt) {
   }
 };
 
-function login () {
-  rbx.login(settings.username, settings.password);
-}
-setInterval(login, 86400000);
-login();
-
 var inProgress = {};
 var completed = {};
 
@@ -73,8 +67,6 @@ function processType (type, value) {
       return parseInt(value, 10);
     case 'boolean':
       return (value === 'true');
-    case 'string':
-      return validator.escape(value);
     default:
       return value;
   }
@@ -337,19 +329,35 @@ app.post('/shout/:group', authenticate, function (req, res, next) {
 
 app.post('/post/:group', authenticate, function (req, res, next) {
   var requiredFields = {
-    'group': 'int'
-  };
-  var optionalFields = {
+    'group': 'int',
     'message': 'string'
   };
   var validate = [req.params, req.body];
-  var opt = verifyParameters(res, validate, requiredFields, optionalFields);
+  var opt = verifyParameters(res, validate, requiredFields);
   if (!opt) {
     return;
   }
   rbx.post(opt)
   .then(function () {
     res.json({error: null, message: 'Posted in group ' + opt.group});
+  })
+  .catch(function (err) {
+    sendErr(res, {error: 'Error: ' + err.message});
+  });
+});
+
+app.get('/getBlurb/:userId', function (req, res, next) {
+  var requiredFields = {
+    'userId': 'int'
+  };
+  var validate = [req.params];
+  var opt = verifyParameters(res, validate, requiredFields);
+  if (!opt) {
+    return;
+  }
+  rbx.getBlurb(opt)
+  .then(function (blurb) {
+    res.json({error: null, data: {blurb: blurb}});
   })
   .catch(function (err) {
     sendErr(res, {error: 'Error: ' + err.message});
@@ -479,6 +487,21 @@ app.use(function (err, req, res, next) {
   sendErr(res, {error: 'Internal server error'});
 });
 
-app.listen(port, function () {
-  console.log('Listening');
+function login () {
+  return rbx.login(settings.username, settings.password);
+}
+setInterval(login, 86400000);
+login().then(function () {
+  app.listen(port, function () {
+    console.log('Listening');
+  });
+})
+.catch(function (err) {
+  var errorApp = express();
+  errorApp.get('/*', function (req, res, next) {
+    res.json({error: 'Server configuration error: ' + err.message});
+  });
+  errorApp.listen(port, function () {
+    console.log('Configuration error page listening');
+  });
 });
