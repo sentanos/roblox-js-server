@@ -52,6 +52,7 @@ local userId = game:GetService'Players':GetUserIdFromNameAsync'Shedletsky'
 local api = server(domain, key, groupId)
 print(api.promote(userId).message)
 print(api.message(userId, 'Subject', 'Body').message)
+print(api.getBlurb(1).data.blurb)
 ```
 
 ## Documentation
@@ -81,6 +82,17 @@ All functions respond with a json table containing the fields `error`, `message`
 Sets the role of the player to the adjacent lower-rank role.
 
 [newRankName: string, newRank: number, newRoleSetId: number]
+
+### GET /getBlurb/{userId: number}
+```http
+/getBlurb/2470023
+```
+
+{key: string}
+
+Gets the blurb of the user with `userId`.
+
+[blurb: string]
 
 ### POST /getPlayers/delete/{uid: string}
 ```http
