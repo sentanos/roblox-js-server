@@ -2,6 +2,7 @@ local groups = {}
 local module = {}
 local setmetatable = setmetatable
 local error = error
+local wait = wait
 local httpService = game:GetService'HttpService'
 local postAsync = httpService.PostAsync
 local getAsync = httpService.GetAsync
@@ -17,79 +18,94 @@ local function decode (tab)
   return jsonDecode(httpService, tab)
 end
 
-local function post (url, data)
-  local body = postAsync(httpService, url, data)
+local function request (url, method, suppress, data)
+  local body = method(httpService, url, data)
   local success, response = pcall(decode, body)
-  if (success) then
-  	local err = response.error
-  	if (err) then
-  	  error(err)
-  	else
-  	  return response
-  	end
+  local err
+  if success then
+    err = response.error
   else
-  	error('Response was not valid json, full body: '..body)
+    err = 'Response was not valid json, full body: '..body
+  end
+  if not err and suppress then
+    return true, response
+  elseif not err then
+    return response
+  elseif suppress then
+    return false, err
+  else
+    error(err)
   end
 end
 
-local function http (path, data)
-  if not data then
-    data = {}
+local http = {
+  post = function (path, data, suppress)
+    if not data then
+      data = {}
+    end
+    data.key = key
+    return request(base..path, postAsync, suppress, encode(data))
+  end,
+  get = function (path, suppress)
+    return request(base..path, getAsync, suppress)
   end
-  data.key = key
-  return post(base..path, encode(data))
-end
+}
 
 function groups.promote (group, userId)
-  return http('/promote/'..group..'/'..userId)
+  return http.post('/promote/'..group..'/'..userId)
 end
 
 function groups.demote (group, userId)
-  return http('/demote/'..group..'/'..userId)
+  return http.post('/demote/'..group..'/'..userId)
 end
 
 function groups.setRank (group, userId, rank)
-  return http('/setRank/'..group..'/'..userId..'/'..rank)
+  return http.post('/setRank/'..group..'/'..userId..'/'..rank)
 end
 
 function groups.shout (group, message)
-  return http('/shout/'..group, {message = message})
+  return http.post('/shout/'..group, {message = message})
 end
 
 function groups.post (group, message)
-  return http('/post/'..group, {message = message})
+  return http.post('/post/'..group, {message = message})
 end
 
 function groups.handleJoinRequest (group, username, accept)
   local acceptString = accept and 'true' or 'false'
-  return http('/handleJoinRequest/'..group..'/'..username..'/'..acceptString)
+  return http.post('/handleJoinRequest/'..group..'/'..username..'/'..acceptString)
 end
 
 function groups.getPlayers (group, rank, limit, online)
-  local job = http('/getPlayers/make/'..group..(rank and '/'..rank or '')..'?limit='..(limit and limit or '-2')..'&online='..(online and 'true' or 'false')).data.uid
+  local job = http.post('/getPlayers/make/'..group..(rank and '/'..rank or '')..'?limit='..(limit and limit or '-2')..'&online='..(online and 'true' or 'false')).data.uid
   local complete, response = false
   repeat
-    local body = getAsync(httpService, base..'/getPlayers/retrieve/'..job)
+    wait(0.5)
     local success
-    success, response = pcall(decode, body)
-    if not success then
-    	error('Response was not valid json, full body: '..body)
+    success, response = http.get('/getPlayers/retrieve/'..job, true)
+    if not success and response:match('$Response was not valid json') then
+      error(response)
+    elseif success then
+      complete = response.data.complete
     end
-    complete = response.data.complete
   until complete
   return response
 end
 
 function module.message (userId, subject, message)
-  return http('/message/'..userId, {subject = subject, body = message})
+  return http.post('/message/'..userId, {subject = subject, body = message})
 end
 
 function module.forumPostNew (forumId, subject, body, locked)
-  return http('/forumPost/new/'..forumId..'?locked='..(locked and 'true' or 'false'), {subject = subject, body = body})
+  return http.post('/forumPost/new/'..forumId..'?locked='..(locked and 'true' or 'false'), {subject = subject, body = body})
 end
 
 function module.forumPostReply (postId, body, locked)
-  return http('/forumPost/reply/'..postId..'?locked='..(locked and 'true' or 'false'), {body = body})
+  return http.post('/forumPost/reply/'..postId..'?locked='..(locked and 'true' or 'false'), {body = body})
+end
+
+function module.getBlurb (userId)
+  return http.get('/getBlurb/'..userId)
 end
 
 return function (domain, newKey, group)
