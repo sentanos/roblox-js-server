@@ -493,7 +493,7 @@ function login () {
 setInterval(login, 86400000);
 login().then(function () {
   app.listen(port, function () {
-    console.log('Listening on Port : ' + port);
+    console.log('Listening on port ' + port);
   });
 })
 .catch(function (err) {
